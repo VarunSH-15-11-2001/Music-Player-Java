@@ -1,7 +1,8 @@
 # Music Player Desktop Application using Java
 
 ### How to run : 
-1. Clone the repository at [this](https://github.com/VarunSH-15-11-2001/Java-project.git) link.
+1. Clone the repository at 
+[this](https://github.com/VarunSH-15-11-2001/Music-Player-Java.git) link.
 2. Before proceeding, make sure to change the direcotry for where the music files are stored. This directory should be changed at lines 53 and 184 of the `MusicPlayerView.java` file. Also note that the supported file extension is `.wav` only.
 3. Open a terminal in the same direcotry and run the following commands one after the other.
 ```
