@@ -13,9 +13,9 @@ import javax.swing.border.EmptyBorder;
 
 import java.io.File;
 import java.io.IOException;
-
 import java.util.Timer;
 import java.util.TimerTask;
+
 
 
 public class MusicPlayerView extends JFrame implements ChangeListener {
@@ -28,6 +28,7 @@ public class MusicPlayerView extends JFrame implements ChangeListener {
 
     private JTextField artistField = new JTextField(20);
     private JTextField durationField = new JTextField(5);
+
     public JButton addButton = new JButton("Choose file");
     public JButton playButton = new JButton("Play");
     public JButton pauseButton = new JButton("Pause");
@@ -37,8 +38,10 @@ public class MusicPlayerView extends JFrame implements ChangeListener {
 
     public JButton nextButton = new JButton("Next Song");
     public JButton prevButton = new JButton("Prev Song");
+
     private JList<Song> playlist = new JList<Song>();
     private DefaultListModel<Song> playlistModel = new DefaultListModel<>();
+    
     int here=0,before,next;
 
     private JFrame frame;
@@ -52,21 +55,14 @@ public class MusicPlayerView extends JFrame implements ChangeListener {
 
     File dir = new File("/Users/varunshankarhoskere/Downloads/Junk");
 
-    private Timer timer;
-
-    private JLabel statusLabel;
-
-    private Handler handler;
-    private Runnable runnable;
-
     String[] fontNames = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
-    
     JList<String> fontList = new JList<>(fontNames);
-
     JScrollPane scrollPane = new JScrollPane(fontList);
 
-
     private MusicPlayerModel model;
+    private MusicPlayerController controller;
+
+
     public MusicPlayerView(MusicPlayerModel model) {
         this.model = model;
         this.model.addChangeListener(this);
@@ -104,6 +100,7 @@ public class MusicPlayerView extends JFrame implements ChangeListener {
         createPlaylist(songs);
         showThemes();
     }
+
     public void stopPlayingTimer(int time) {
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
@@ -149,15 +146,11 @@ public class MusicPlayerView extends JFrame implements ChangeListener {
             int result = fileChooser.showOpenDialog(frame);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();
-
-                titleLabel.setText(selectedFile.getAbsolutePath());
-                
+                // titleLabel.setText(selectedFile.getAbsolutePath());   
                 if (clip != null) {
                     clip.stop();
                     clip.close();
                 }
-
-                
                 try {
                     AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(
                         selectedFile);
@@ -171,13 +164,11 @@ public class MusicPlayerView extends JFrame implements ChangeListener {
                     
                 } catch (LineUnavailableException ex) {
                     ex.printStackTrace();
-                    
                 }
-
                 clip.start();
+                currSong = clip;
             }
         }
-        
     }
 
     public void createPlaylist(String songs) {
@@ -222,6 +213,7 @@ public class MusicPlayerView extends JFrame implements ChangeListener {
     
 
     public void addListeners(ActionListener listener) {
+
         addButton.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -232,7 +224,10 @@ public class MusicPlayerView extends JFrame implements ChangeListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 initContentPane();
-                currSong = clipPlayList.get(here);
+
+                if(currSong==null) {
+                    currSong = clipPlayList.get(here);
+                }
                 currSong.start();
             }
         });
@@ -268,7 +263,7 @@ public class MusicPlayerView extends JFrame implements ChangeListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 stopPlayingTimer(Integer.parseInt(titleField.getText()));
-                System.out.println(titleField.getText());
+                // System.out.println(titleField.getText());
             }
         });
 
@@ -345,4 +340,4 @@ public class MusicPlayerView extends JFrame implements ChangeListener {
             setPauseButtonEnabled(playing && !paused);
             // setStopButtonEnabled(playing);
         }
-    }        
+    }    
