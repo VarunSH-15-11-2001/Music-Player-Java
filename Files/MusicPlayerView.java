@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.logging.Handler;
 
 import javax.swing.*;
@@ -21,12 +22,15 @@ import java.util.TimerTask;
 public class MusicPlayerView extends JFrame implements ChangeListener {
 
     private JLabel titleLabel = new JLabel("Set Timer Duration:");
-    private JLabel artistLabel = new JLabel("Artist:");
+    private JLabel songName;
+    private JTextField songNameField;
+    String nameOfSong;
+  private JLabel artistField = new JLabel();
     private JLabel durationLabel = new JLabel("Duration (s):");
 
     private JTextField titleField = new JTextField(20);
 
-    private JTextField artistField = new JTextField(20);
+
     private JTextField durationField = new JTextField(5);
 
     public JButton addButton = new JButton("Choose file");
@@ -35,19 +39,19 @@ public class MusicPlayerView extends JFrame implements ChangeListener {
     public JButton setTimer = new JButton("Set Timer");
     public JButton setTheme = new JButton("Set Theme");
     private JPanel contentPane;
+    private JTextArea textArea;
 
     public JButton nextButton = new JButton("Next Song");
     public JButton prevButton = new JButton("Prev Song");
 
     private JList<Song> playlist = new JList<Song>();
     private DefaultListModel<Song> playlistModel = new DefaultListModel<>();
-    
-    int here=0,before,next;
+    int here=0;
 
     private JFrame frame;
     private Clip clip;
     ArrayList <Clip> clipPlayList = new ArrayList<Clip>();
-
+    ArrayList <String> clipPlayListAdd = new ArrayList<>();
     private JProgressBar progressBar = new JProgressBar();;
     GridBagConstraints gbc = new GridBagConstraints();
 
@@ -64,6 +68,10 @@ public class MusicPlayerView extends JFrame implements ChangeListener {
 
 
     public MusicPlayerView(MusicPlayerModel model) {
+        songName = new JLabel("Title:");
+        songNameField = new JTextField(20);
+        songNameField.setEditable(false);
+
         this.model = model;
         this.model.addChangeListener(this);
         setTitle("Music Player");
@@ -71,8 +79,11 @@ public class MusicPlayerView extends JFrame implements ChangeListener {
         setLayout(new BorderLayout());
 
         JPanel inputPanel = new JPanel(new GridLayout(3, 2));
+        inputPanel.add(songName);
+        inputPanel.add(songNameField);
         inputPanel.add(titleLabel);
         inputPanel.add(titleField);
+
         // inputPanel.add(artistLabel);
         // inputPanel.add(artistField);
         // inputPanel.add(durationLabel);
@@ -102,13 +113,14 @@ public class MusicPlayerView extends JFrame implements ChangeListener {
     }
 
     public void stopPlayingTimer(int time) {
+        time = time * 1000;
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             public void run() {
                 currSong.stop();
                 timer.cancel();
             }
-        }, time * 1000);
+        }, time);
     }
 
     public void showThemes() {
@@ -119,6 +131,10 @@ public class MusicPlayerView extends JFrame implements ChangeListener {
     
     public void applyTheme(String fontName) {
         Font font = new Font(fontName,Font.PLAIN,13);
+        songName.setFont(font);
+        titleLabel.setFont(font);
+        titleField.setFont(font);
+        songNameField.setFont(font);
         addButton.setFont(font);
         playButton.setFont(font);
         pauseButton.setFont(font);
@@ -126,6 +142,7 @@ public class MusicPlayerView extends JFrame implements ChangeListener {
         prevButton.setFont(font);
         setTimer.setFont(font);
         setTheme.setFont(font);
+        textArea.setFont(font);
     }
 
     public void initContentPane() {
@@ -146,6 +163,7 @@ public class MusicPlayerView extends JFrame implements ChangeListener {
             int result = fileChooser.showOpenDialog(frame);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();
+                nameOfSong = selectedFile.getName().substring(0, selectedFile.getName().lastIndexOf('.'));
                 // titleLabel.setText(selectedFile.getAbsolutePath());   
                 if (clip != null) {
                     clip.stop();
@@ -156,27 +174,31 @@ public class MusicPlayerView extends JFrame implements ChangeListener {
                         selectedFile);
                     clip = AudioSystem.getClip();
                     clip.open(audioInputStream);
-                } catch (UnsupportedAudioFileException ex) {
+                } catch (UnsupportedAudioFileException  ex) {
                     ex.printStackTrace();
                     
                 } catch (IOException ex) {
                     ex.printStackTrace();
-                    
+
                 } catch (LineUnavailableException ex) {
                     ex.printStackTrace();
                 }
                 clip.start();
+                songNameField.setText(nameOfSong);
                 currSong = clip;
             }
         }
     }
 
     public void createPlaylist(String songs) {
+        // /Users/varunshankarhoskere/Downloads/Junk
         File dir = new File("/Users/varunshankarhoskere/Downloads/Junk");
-        for (File file : dir.listFiles()) {
+        for (File file : Objects.requireNonNull(dir.listFiles())) {
             if (file.isFile() && file.getName().endsWith(".wav")) {
                 String title = file.getName().substring(0, file.getName().lastIndexOf('.'));
+                nameOfSong = file.getName().substring(0, file.getName().lastIndexOf('.'));
                 Song song = new Song(title, "unknown artist", 0);
+                clipPlayListAdd.add(nameOfSong);
                 playlistModel.addElement(song);
                 // System.out.println(song);
                 
@@ -204,7 +226,7 @@ public class MusicPlayerView extends JFrame implements ChangeListener {
         }
 
         
-        JTextArea textArea = new JTextArea(songs);
+        textArea = new JTextArea(songs);
         textArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(textArea);
         add(scrollPane, BorderLayout.SOUTH);
@@ -229,6 +251,8 @@ public class MusicPlayerView extends JFrame implements ChangeListener {
                     currSong = clipPlayList.get(here);
                 }
                 currSong.start();
+                clearInputs();
+                songNameField.setText(clipPlayListAdd.get(here));
             }
         });
         pauseButton.addActionListener(new ActionListener() {
@@ -245,6 +269,8 @@ public class MusicPlayerView extends JFrame implements ChangeListener {
                 here+=1;
                 currSong = clipPlayList.get(here);
                 currSong.start();
+                clearInputs();
+                songNameField.setText(clipPlayListAdd.get(here));
             }
         });
 
@@ -256,6 +282,8 @@ public class MusicPlayerView extends JFrame implements ChangeListener {
                 here-=1;
                 currSong = clipPlayList.get(here);
                 currSong.start();
+                clearInputs();
+                songNameField.setText(clipPlayListAdd.get(here));
             }
         });
 
@@ -340,4 +368,4 @@ public class MusicPlayerView extends JFrame implements ChangeListener {
             setPauseButtonEnabled(playing && !paused);
             // setStopButtonEnabled(playing);
         }
-    }    
+    }  
