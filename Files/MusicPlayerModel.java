@@ -49,6 +49,7 @@ public class MusicPlayerModel {
     
     public void prevSong() {
         int currentIndex = playlist.indexOf(currentSong);
+        // prev song
         if (currentIndex > 0) {
             currentSong = playlist.get(currentIndex - 1);
             playing = true;
